@@ -1,7 +1,7 @@
 from fastapi import APIRouter,HTTPException,status
-from core.dependancies import db_dependancy
-from schemas.auth_schemas import message, user_sign_up
-from services.auth_services import check_user_exists,create_user
+from app.core.dependancies import db_dependancy
+from app.schemas.auth_schemas import message, user_sign_up
+from app.services.auth_services import check_user_exists,create_user
 
 auth_router=APIRouter(prefix="/auth",tags=["auth"])
 

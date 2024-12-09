@@ -1,6 +1,6 @@
 from sqlalchemy.orm import Session
-from schemas.auth_schemas import user_sign_up
-from models.auth_models import User
+from app.schemas.auth_schemas import user_sign_up
+from app.models.auth_models import User
 from passlib.context import CryptContext
 
 

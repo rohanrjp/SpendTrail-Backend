@@ -1,8 +1,8 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from core.config import Config
-from routes.auth import auth_router
-from core.db import init_db
+from app.core.config import Config
+from app.routes.auth import auth_router
+from app.core.db import init_db
 
 version="v1"
 
@@ -36,7 +36,7 @@ if __name__=="__main__":
     import uvicorn
     
     uvicorn.run(
-        "main:app",
+        "app.main:app",
         host="0.0.0.0", 
         port=8000,       
         reload=True 

@@ -1,5 +1,5 @@
 from fastapi import Depends
-from core.db import Session_Local
+from app.core.db import Session_Local
 from sqlalchemy.orm import Session
 from typing import Annotated
 
