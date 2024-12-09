@@ -1,7 +1,8 @@
 from fastapi import APIRouter,HTTPException,status
 from app.core.dependancies import db_dependancy
-from app.schemas.auth_schemas import message, user_sign_up
-from app.services.auth_services import check_user_exists,create_user
+from app.schemas.auth_schemas import message, user_sign_up,user_log_in,Token
+from app.services.auth_services import check_user_exists, create_access_token,create_user, verify_password
+from datetime import timedelta
 
 auth_router=APIRouter(prefix="/auth",tags=["auth"])
 
@@ -13,4 +14,15 @@ async def sign_up(user:user_sign_up,db:db_dependancy):
         return message(message="User created succesfully")
     else:
         raise HTTPException(status_code=400,detail="User already exists")
+    
+
+@auth_router.post("/log_in",status_code=status.HTTP_200_OK,response_model=Token)
+async def log_in(user:user_log_in,db:db_dependancy):
+    existing_user=check_user_exists(user,db)
+    if not existing_user:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,message="User not found")
+    if not verify_password(user.password,existing_user.hashed_password):
+        raise  HTTPException(status_code=status.HTTP_401_UNAUTHORIZED,message="Password incorrect")
+    access_token=create_access_token(existing_user.id,existing_user.email,expiry=timedelta(minutes=20)) 
+    return {"access_token":access_token,"token_type":"bearer"}
         

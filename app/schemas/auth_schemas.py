@@ -7,4 +7,12 @@ class user_sign_up(BaseModel):
     avatar:str
 
 class message(BaseModel):
-    message:str    
+    message:str
+
+class user_log_in(BaseModel):
+    email:str
+    password:str
+    
+class Token(BaseModel):
+    access_token:str 
+    token_type:str           
