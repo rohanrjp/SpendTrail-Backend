@@ -12,7 +12,7 @@ app=FastAPI(title="SpendTrail",description="AI based expense tracker",version=ve
 app.include_router(auth_router)
 
 origins=[
-    "spendtrail-2sbnd7a65-rohan1007rjp-gmailcoms-projects.vercel.app"
+    "*"
 ]
 
 app.add_middleware(
