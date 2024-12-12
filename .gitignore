@@ -14,3 +14,6 @@ app/schemas/__pycache__/__init__.cpython-311.pyc
 app/services/__pycache__/auth_services.cpython-311.pyc
 app/services/__pycache__/__init__.cpython-311.pyc
 app/__pycache__/__init__.cpython-311.pyc
+app/core/__pycache__/utils.cpython-311.pyc
+app/core/__pycache__/auth_dependacies.cpython-311.pyc
+app/exceptions/__pycache__/auth_exceptions.cpython-311.pyc

@@ -1,4 +1,4 @@
-from sqlalchemy import Column,Integer,String,ForeignKey
+from sqlalchemy import Column,DateTime,Integer,String,ForeignKey
 from app.core.db import Base
 
 
@@ -11,3 +11,4 @@ class User(Base):
     email=Column(String,unique=True,nullable=False)
     hashed_password=Column(String,nullable=False)
     avatar = Column(String, nullable=True)  
+    join_date = Column(DateTime, nullable=False) 
