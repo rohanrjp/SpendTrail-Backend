@@ -6,14 +6,12 @@ from app.models.auth_models import User
 from app.schemas.auth_schemas import message, user_sign_up,UserProfileResponse,Token
 from app.services.auth_services import check_user_exists, create_access_token,create_user, verify_password
 from datetime import timedelta
-from fastapi.responses import JSONResponse
-from fastapi.encoders import jsonable_encoder
 
 auth_router=APIRouter(prefix="/auth",tags=["auth"])
 
 @auth_router.post("/sign_up",status_code=status.HTTP_201_CREATED)
 async def sign_up(user:user_sign_up,db:db_dependancy):
-    existing_user=check_user_exists(user,db)
+    existing_user=check_user_exists(user.email,db)
     if not existing_user:
         create_user(user,db)
         return message(message="User created succesfully")
