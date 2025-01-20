@@ -17,3 +17,10 @@ app/__pycache__/__init__.cpython-311.pyc
 app/core/__pycache__/utils.cpython-311.pyc
 app/core/__pycache__/auth_dependacies.cpython-311.pyc
 app/exceptions/__pycache__/auth_exceptions.cpython-311.pyc
+app/models/__pycache__/expenses.cpython-311.pyc
+app/schemas/__pycache__/functionality_schemas.cpython-311.pyc
+app/services/__pycache__/ai_services.cpython-311.pyc
+.gitignore
+app/routes/__pycache__/functionality.cpython-311.pyc
+app/routes/__pycache__/ai.cpython-311.pyc
+app/services/__pycache__/functionality_services.cpython-311.pyc

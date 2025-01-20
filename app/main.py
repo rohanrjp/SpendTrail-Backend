@@ -3,6 +3,8 @@ from fastapi.middleware.cors import CORSMiddleware
 from app.core.config import Config
 from app.routes.auth import auth_router
 from app.core.db import init_db
+from app.routes.functionality import functionality_router
+from app.routes.ai import ai_router
 
 version="v1"
 
@@ -10,6 +12,8 @@ app=FastAPI(title="SpendTrail",description="AI based expense tracker",version=ve
 
 
 app.include_router(auth_router)
+app.include_router(functionality_router)
+app.include_router(ai_router)
 
 origins=[
     "*"

@@ -7,7 +7,7 @@ from app.schemas.auth_schemas import message, user_sign_up,UserProfileResponse,T
 from app.services.auth_services import check_user_exists, create_access_token,create_user, verify_password
 from datetime import timedelta
 
-auth_router=APIRouter(prefix="/auth",tags=["auth"])
+auth_router=APIRouter(prefix="/auth",tags=["Auth"])
 
 @auth_router.post("/sign_up",status_code=status.HTTP_201_CREATED)
 async def sign_up(user:user_sign_up,db:db_dependancy):
