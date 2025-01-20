@@ -5,8 +5,8 @@ class Settings(BaseSettings):
     ALGORITHM:str
     ACCESS_TOKEN_EXPIRE_MINUTES:int
     DATABASE_URL:str
-    environment:str
     GEMINI_API_KEY:str
+    environment:str
 
     model_config = SettingsConfigDict(
         env_file=".env", 
