@@ -27,6 +27,10 @@ app.add_middleware(
     allow_headers=["*"], 
 )
 
+@app.get("/ping", tags=["Health Check"])
+def ping():
+    return {"message": "Service is running"}
+
 
 if __name__=="__main__":
     
