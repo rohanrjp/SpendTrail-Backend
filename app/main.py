@@ -5,6 +5,9 @@ from app.routes.auth import auth_router
 from app.core.db import init_db
 from app.routes.functionality import functionality_router
 from app.routes.ai import ai_router
+from app.models.db_health_check import DBHealthCheck
+from app.core.dependancies import db_dependancy
+from app.core.utils import get_ist_datetime
 
 version="v1"
 
@@ -28,8 +31,24 @@ app.add_middleware(
 )
 
 @app.get("/ping", tags=["Health Check"])
-def ping():
-    return {"message": "Service is running"}
+def ping(db:db_dependancy):
+    current_time=get_ist_datetime()
+    last_health_check=db.query(DBHealthCheck).order_by(DBHealthCheck.last_checked_time.desc()).first()
+    if last_health_check:
+        last_health_check.last_checked_time=current_time
+        db.add(last_health_check)
+    else:
+        new_health_check=DBHealthCheck(last_checked_time=current_time)
+        db.add(new_health_check)
+    
+    db.commit()  
+    
+    last_checked = last_health_check.last_checked_time if last_health_check else "No previous record"
+      
+    return {
+        "message": "Service is running",
+        "Database last checked at": last_checked.isoformat() 
+    }
 
 
 if __name__=="__main__":
