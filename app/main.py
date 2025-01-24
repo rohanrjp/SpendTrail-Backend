@@ -47,7 +47,7 @@ def ping(db:db_dependancy):
       
     return {
         "message": "Service is running",
-        "Database last checked at": last_checked.isoformat() 
+        "Database last checked at": last_checked.isoformat() if last_checked else "No previous record"
     }
 
 
