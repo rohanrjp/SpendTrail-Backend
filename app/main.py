@@ -42,12 +42,9 @@ def ping(db:db_dependancy):
         db.add(new_health_check)
     
     db.commit()  
-    
-    last_checked = last_health_check.last_checked_time if last_health_check else "No previous record"
-      
+          
     return {
         "message": "Service is running",
-        "Database last checked at": last_checked.isoformat() if last_checked else "No previous record"
     }
 
 
