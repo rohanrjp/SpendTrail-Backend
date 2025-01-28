@@ -1,4 +1,4 @@
-from sqlalchemy import Column,DateTime,Integer,String,ForeignKey
+from sqlalchemy import Column,DateTime,Integer,String,Float
 from app.core.db import Base
 
 
@@ -12,3 +12,5 @@ class User(Base):
     hashed_password=Column(String,nullable=False)
     avatar = Column(String, nullable=True)  
     join_date = Column(DateTime, nullable=False) 
+    income_goal=Column(Float,nullable=True)
+    savings_goal=Column(Float,nullable=True)
