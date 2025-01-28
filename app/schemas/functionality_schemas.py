@@ -14,4 +14,13 @@ class income(BaseModel):
    income_emoji:str 
    
 class updated_income(BaseModel):
-   amount_to_add:float     
+   amount_to_add:float
+   
+class budget(BaseModel):
+   budget_amount:float
+   budget_category:str
+   budget_emoji:str        
+   
+class updated_budget(BaseModel):
+   amount_to_add:float
+      

@@ -26,3 +26,4 @@ app/routes/__pycache__/ai.cpython-311.pyc
 app/services/__pycache__/functionality_services.cpython-311.pyc
 app/models/__pycache__/incomes.cpython-311.pyc
 app/models/__pycache__/db_health_check.cpython-311.pyc
+app/models/__pycache__/budgets.cpython-311.pyc
