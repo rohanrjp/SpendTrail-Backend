@@ -30,7 +30,7 @@ def check_user_exists(email,db:Session):
 def create_user(user:user_sign_up,db:Session):
     hashed_password=hash_pass(user.password)
     ist_datetime=get_ist_datetime()
-    new_user=User(name=user.name,email=user.email,hashed_password=hashed_password,avatar=user.avatar,join_date=ist_datetime)
+    new_user=User(name=user.name,email=user.email,hashed_password=hashed_password,avatar=user.avatar,join_date=ist_datetime,income_goal=45000,savings_goal=10000)
     db.add(new_user)
     db.commit()
     db.refresh(new_user)

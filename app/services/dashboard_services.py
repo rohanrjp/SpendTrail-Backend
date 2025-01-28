@@ -1,8 +1,5 @@
 from sqlalchemy.orm import Session
-from sqlalchemy.sql import extract
 from app.models.auth_models import User
-from app.models.incomes import Incomes
-from app.models.expenses import Expenses
 from datetime import datetime
 from collections import defaultdict
 from app.services.functionality_services import get_expenses,get_budgets,get_incomes
@@ -13,8 +10,8 @@ def get_dashboard_graph_data(db:Session,user):
     current_year=datetime.now().year 
     
     
-    expenses=db.query(Expenses).filter(Expenses.owner==user.id,extract('month',Expenses.expense_created_date)==current_month,extract('year',Expenses.expense_created_date)==current_year).all()
-    incomes=db.query(Incomes).filter(Incomes.owner==user.id,extract('month',Incomes.income_created_date)==current_month,extract('year',Incomes.income_created_date)==current_year).all()
+    expenses=get_expenses(db,user)
+    incomes=get_incomes(db,user)
     
     total_expenses=sum(expense.expense_amount for expense in expenses)
     total_income=sum(income.income_amount for income in incomes)
@@ -66,3 +63,15 @@ def get_aggregate_data(db:Session,user):
    } 
    
    return financialData
+
+def get_recent_expense_data(db:Session,user):
+    
+    expenses=get_expenses(db,user)
+    
+    recent_expenses=[
+        { "category": expense.expense_category , "amount": expense.recent_expense_amount, "date": expense.recent_expense_date.strftime("%d-%m-%Y") if expense.recent_expense_date else "-"}
+        for expense in expenses
+    ]
+    
+    return recent_expenses    
+    
