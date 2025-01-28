@@ -70,7 +70,7 @@ def get_recent_expense_data(db:Session,user):
     
     recent_expenses=[
         { "category": expense.expense_category , "amount": expense.recent_expense_amount, "date": expense.recent_expense_date.strftime("%d-%m-%Y") if expense.recent_expense_date else "-"}
-        for expense in expenses
+        for expense in expenses if expense.recent_expense_amount!=0
     ]
     
     return recent_expenses    
