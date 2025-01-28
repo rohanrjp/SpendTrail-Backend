@@ -8,6 +8,7 @@ from app.routes.ai import ai_router
 from app.models.db_health_check import DBHealthCheck
 from app.core.dependancies import db_dependancy
 from app.core.utils import get_ist_datetime
+from app.routes.dashboard import dashboard_router
 
 version="v1"
 
@@ -17,6 +18,7 @@ app=FastAPI(title="SpendTrail",description="AI based expense tracker",version=ve
 app.include_router(auth_router)
 app.include_router(functionality_router)
 app.include_router(ai_router)
+app.include_router(dashboard_router)
 
 origins=[
     "*"
