@@ -29,3 +29,5 @@ class UserProfileResponse(BaseModel):
     email: str
     avatar: str = None 
     join_date: datetime    
+    income_goal:float
+    savings_goal:float
