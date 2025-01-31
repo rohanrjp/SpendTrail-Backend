@@ -24,3 +24,8 @@ class budget(BaseModel):
 class updated_budget(BaseModel):
    amount_to_add:float
       
+class input_income_goal(BaseModel):
+   amount_to_update:float      
+   
+class InputSavingsGoal(BaseModel):
+   amount_to_update:float   

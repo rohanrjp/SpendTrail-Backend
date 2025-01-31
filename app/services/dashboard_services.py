@@ -3,6 +3,8 @@ from app.models.auth_models import User
 from datetime import datetime
 from collections import defaultdict
 from app.services.functionality_services import get_expenses,get_budgets,get_incomes
+from app.schemas.functionality_schemas import input_income_goal,InputSavingsGoal
+from fastapi import HTTPException,status
 
 def get_dashboard_graph_data(db:Session,user):
     
@@ -74,4 +76,22 @@ def get_recent_expense_data(db:Session,user):
     ]
     
     return recent_expenses    
+    
+def update_income_goal(db:Session,user,new_income_goal:float):   
+    current_user=db.query(User).filter(User.id==user.id).first()
+    if not current_user:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,detail="User not found")
+    current_user.income_goal=new_income_goal
+    db.commit()
+    db.refresh(current_user)
+    return current_user
+
+def update_savings_goal(db:Session,user,new_savings_goal:float):
+    current_user=db.query(User).filter(User.id==user.id).first()
+    if not current_user:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,detail="User not found")
+    current_user.savings_goal=new_savings_goal
+    db.commit()
+    db.refresh(current_user)
+    return current_user
     
