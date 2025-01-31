@@ -28,7 +28,7 @@ async def update_income_goal_route(db:db_dependancy,user:user_dependancy,input_i
     updated_user=update_income_goal(db,user,input_income_goal.amount_to_update)
     return {"message":"Income goals updated","new_income_goal":updated_user.income_goal}
 
-@dashboard_router.put('update_savings_goal',status_code=status.HTTP_200_OK)
+@dashboard_router.put('/update_savings_goal',status_code=status.HTTP_200_OK)
 async def update_savings_goal_route(db:db_dependancy,user:user_dependancy,input_savings_goal:InputSavingsGoal):
     updated_user=update_savings_goal(db,user,input_savings_goal.amount_to_update)
     return {"message":"Savings goal updated","new_savings_goal":updated_user.savings_goal}
