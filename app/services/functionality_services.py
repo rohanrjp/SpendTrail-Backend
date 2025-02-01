@@ -10,14 +10,14 @@ from datetime import datetime
 
 
 def get_expenses(db:Session,user):
-    current_month=datetime.now().month
-    current_year=datetime.now().year
+    current_month=get_ist_datetime().month
+    current_year=get_ist_datetime().year
     
     return db.query(Expenses).filter(Expenses.owner==user.id,extract('month',Expenses.expense_created_date)==current_month,extract('year',Expenses.expense_created_date)==current_year).all()
 
 def create_new_expense(user, db: Session, input_expense: expense):
-    current_month = datetime.now().month
-    current_year = datetime.now().year
+    current_month = get_ist_datetime().month
+    current_year = get_ist_datetime().year
 
     corresponding_budget = db.query(Budgets).filter(
         Budgets.budget_category == input_expense.expense_category,
@@ -68,8 +68,8 @@ def create_new_expense(user, db: Session, input_expense: expense):
         )
     
 def update_expense(user,db:Session,category:str,amount_to_add:updated_expense):
-    current_month = datetime.now().month
-    current_year = datetime.now().year
+    current_month = get_ist_datetime().month
+    current_year = get_ist_datetime().year
 
     expense = db.query(Expenses).filter(
         Expenses.expense_category == category,
@@ -92,8 +92,8 @@ def update_expense(user,db:Session,category:str,amount_to_add:updated_expense):
     db.refresh(expense)  
     
 def get_incomes(db:Session,user):
-    current_month=datetime.now().month
-    current_year=datetime.now().year
+    current_month=get_ist_datetime().month
+    current_year=get_ist_datetime().year
     
     return db.query(Incomes).filter(Incomes.owner==user.id,extract('month',Incomes.income_created_date)==current_month,extract('year',Incomes.income_created_date)==current_year).all()
   
@@ -140,8 +140,8 @@ def create_new_income(db: Session, user, input_income: income):
     
     
 def update_income(db:Session,user,category:str,amount_to_add:float):
-    current_month = datetime.now().month
-    current_year = datetime.now().year
+    current_month = get_ist_datetime().month
+    current_year = get_ist_datetime().year
 
     income = db.query(Incomes).filter(
         Incomes.income_category == category,
@@ -164,8 +164,8 @@ def update_income(db:Session,user,category:str,amount_to_add:float):
     db.refresh(income)          
     
 def create_new_budget(db: Session, user, input_budget: budget):
-    current_month = datetime.now().month
-    current_year = datetime.now().year
+    current_month = get_ist_datetime().month
+    current_year = get_ist_datetime().year
 
     existing_budget = db.query(Budgets).filter(
         Budgets.budget_category == input_budget.budget_category,
@@ -205,8 +205,8 @@ def create_new_budget(db: Session, user, input_budget: budget):
         
 def get_budgets(db:Session,user):
     
-    current_month=datetime.now().month
-    current_year=datetime.now().year      
+    current_month=get_ist_datetime().month
+    current_year=get_ist_datetime().year      
     
     return db.query(Budgets).filter(Budgets.owner==user.id,extract('month',Budgets.budget_created_date)==current_month,extract('year',Budgets.budget_created_date)==current_year).all()
 
@@ -227,8 +227,8 @@ def update_budget(db:Session,user,category,update_budget_request:updated_budget)
     
 def get_all_budget_details(db:Session,user):
     
-    current_month=datetime.now().month 
-    current_year=datetime.now().year
+    current_month=get_ist_datetime().month 
+    current_year=get_ist_datetime().year
     
     budgets=db.query(Budgets).filter(Budgets.owner==user.id,extract('month',Budgets.budget_created_date)==current_month,extract('year',Budgets.budget_created_date)==current_year).all()
     expenses=db.query(Expenses).filter(Expenses.owner==user.id,extract('month',Expenses.expense_created_date)==current_month,extract('year',Expenses.expense_created_date)==current_year).all()

@@ -1,7 +1,7 @@
 from fastapi import APIRouter,status,Query
 from app.core.dependancies import db_dependancy
 from app.core.auth_dependacies import user_dependancy
-from app.services.dashboard_services import get_dashboard_graph_data,get_aggregate_data,get_recent_expense_data,update_income_goal,update_savings_goal,get_past_financial_data
+from app.services.dashboard_services import get_dashboard_graph_data,get_aggregate_data,get_recent_expense_data,update_income_goal,update_savings_goal,get_past_financial_data,get_past_dashboard_graph_data
 from app.schemas.functionality_schemas import input_income_goal,InputSavingsGoal,PastRecord
 from app.core.utils import get_ist_datetime
 
@@ -40,7 +40,9 @@ async def update_savings_goal_route(db:db_dependancy,user:user_dependancy,input_
 async def get_past_records_route(db:db_dependancy,user:user_dependancy,month:str=Query(...,description="Input month"),year:int=Query(...,ge=2000,le=get_current_year())):
     record=PastRecord(month=month,year=year)
     financialData=get_past_financial_data(db,user,record.month,record.year)
-    return financialData
+    graph_data=get_past_dashboard_graph_data(db,user,record.month,record.year)
+    data={"financialData":financialData,"graph_data":graph_data}
+    return data
     
     
     

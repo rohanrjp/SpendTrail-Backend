@@ -13,10 +13,6 @@ from sqlalchemy import extract
 
 def get_dashboard_graph_data(db:Session,user):
     
-    current_month=datetime.now().month 
-    current_year=datetime.now().year 
-    
-    
     expenses=get_expenses(db,user)
     incomes=get_incomes(db,user)
     
@@ -136,3 +132,43 @@ def get_past_financial_data(db:Session,user,month:str,year:int):
    
     return financialData
         
+def get_past_dashboard_graph_data(db:Session,user,month:str,year:int):
+    
+    MONTH_NAME_TO_NUMBER = {
+    "January": 1, "February": 2, "March": 3, "April": 4, "May": 5, "June": 6,
+    "July": 7, "August": 8, "September": 9, "October": 10, "November": 11, "December": 12
+    }
+    
+    month_number = MONTH_NAME_TO_NUMBER.get(month)
+    if month_number is None:
+        raise ValueError(f"Invalid month name: {month}")
+    
+    expenses=db.query(Expenses).filter(Expenses.owner==user.id,extract('month',Expenses.expense_created_date)==month_number,extract('year',Expenses.expense_created_date)==year).all()
+    incomes=db.query(Incomes).filter(Incomes.owner==user.id,extract('month',Incomes.income_created_date)==month_number,extract('year',Incomes.income_created_date)==year).all()
+    
+    
+    total_expenses=sum(expense.expense_amount for expense in expenses)
+    total_income=sum(income.income_amount for income in incomes)
+    total_savings=total_income-total_expenses
+    
+    incomeExpenseAnalysis=[
+        { "label": "Income", "amount": total_income, "fill": "#4CAF50" },
+        { "label": "Expenses", "amount": total_expenses, "fill": "#F44336" }, 
+        { "label": "Savings", "amount": total_savings, "fill": "#8884d8" },
+    ]
+    
+    expense_categories=defaultdict(float)
+    for expense in expenses:
+        expense_categories[expense.expense_category]+=expense.expense_amount
+    
+    Piechart_data=[
+        {"name":category,"value":amount}
+        for category,amount in expense_categories.items()
+    ]
+    
+    dashboard_graph_data = [
+    {"type": "incomeExpenseAnalysis", "data": incomeExpenseAnalysis},
+    {"type": "Piechart_data", "data": Piechart_data}
+    ]
+    
+    return dashboard_graph_data        
