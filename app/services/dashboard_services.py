@@ -5,6 +5,11 @@ from collections import defaultdict
 from app.services.functionality_services import get_expenses,get_budgets,get_incomes
 from app.schemas.functionality_schemas import input_income_goal,InputSavingsGoal
 from fastapi import HTTPException,status
+from app.models.expenses import Expenses
+from app.models.budgets import Budgets
+from app.models.incomes import Incomes
+from sqlalchemy import extract
+
 
 def get_dashboard_graph_data(db:Session,user):
     
@@ -95,3 +100,39 @@ def update_savings_goal(db:Session,user,new_savings_goal:float):
     db.refresh(current_user)
     return current_user
     
+def get_past_financial_data(db:Session,user,month:str,year:int):
+    
+    MONTH_NAME_TO_NUMBER = {
+    "January": 1, "February": 2, "March": 3, "April": 4, "May": 5, "June": 6,
+    "July": 7, "August": 8, "September": 9, "October": 10, "November": 11, "December": 12
+    }
+    
+    month_number = MONTH_NAME_TO_NUMBER.get(month)
+    if month_number is None:
+        raise ValueError(f"Invalid month name: {month}")
+    
+    expenses=db.query(Expenses).filter(Expenses.owner==user.id,extract('month',Expenses.expense_created_date)==month_number,extract('year',Expenses.expense_created_date)==year).all()
+    incomes=db.query(Incomes).filter(Incomes.owner==user.id,extract('month',Incomes.income_created_date)==month_number,extract('year',Incomes.income_created_date)==year).all()
+    budgets=db.query(Budgets).filter(Budgets.owner==user.id,extract('month',Budgets.budget_created_date)==month_number,extract('year',Budgets.budget_created_date)==year).all()
+
+    if not expenses and not incomes and not budgets:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,detail="Past expenses/incomes/budgets not found")
+    
+    current_user=db.query(User).filter(User.id==user.id).first()
+    income_goal=current_user.income_goal
+    savings_goal=current_user.savings_goal
+    
+    current_total_expenses=sum(expense.expense_amount for expense in expenses)
+    current_total_budget=sum(budget.budget_amount for budget in budgets)
+    current_total_income=sum(income.income_amount for income in incomes)
+    current_total_savings=current_total_income-current_total_expenses
+   
+    financialData={
+       "expenses":{"current":current_total_expenses,"goal":current_total_budget},
+       "budget":{ "current": current_total_expenses, "goal": current_total_budget },
+       "income": { "current": current_total_income, "goal": income_goal },
+       "savings": { "current":current_total_savings , "goal": savings_goal },
+     } 
+   
+    return financialData
+        

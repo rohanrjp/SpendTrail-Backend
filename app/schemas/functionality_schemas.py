@@ -1,4 +1,7 @@
-from pydantic import BaseModel
+from pydantic import BaseModel,Field
+from typing import Literal
+from datetime import datetime
+from app.core.utils import get_ist_datetime
 
 class expense(BaseModel):
    expense_amount:float
@@ -29,3 +32,11 @@ class input_income_goal(BaseModel):
    
 class InputSavingsGoal(BaseModel):
    amount_to_update:float   
+
+def get_current_year():
+   return get_ist_datetime().year   
+   
+class PastRecord(BaseModel):
+   month:Literal["January","February", "March", "April", "May", "June",
+        "July", "August", "September", "October", "November", "December"]
+   year:int=Field(...,ge=2000,le=get_current_year(),description="Year should be between 2000 and the current year")
