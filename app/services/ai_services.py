@@ -19,6 +19,7 @@ model = genai.GenerativeModel(
   generation_config=generation_config,
 )
 def generate_prompt(expenses: list, budgets: list, incomes: list) -> str:
+    currency="Indian Rupee(₹)"
     prompt = f"""
 You are a financial analysis expert tasked with reviewing the provided financial data. Your analysis should be accurate, detailed, and actionable. Carefully analyze the data to ensure no misinterpretation occurs, especially in identifying whether actual expenses are greater than, equal to, or less than the allocated budgets. 
 
@@ -34,7 +35,8 @@ Expenses: {expenses}
 Incomes: {incomes}
 Budgets: {budgets}
 
-Ensure your analysis is based strictly on the data provided and contains no assumptions or errors. Recheck all calculations twice before generating insights. Your response should be a single, coherent paragraph with clear observations and actionable advice.
+Ensure your analysis is based strictly on the data provided and contains no assumptions or errors. Recheck all calculations twice before generating insights.Make sure the math is correct when you say amount is greater than the other. Your response should be a single, coherent paragraph with clear observations and actionable advice.
+The currency used is {currency}
 """
     return prompt
 
