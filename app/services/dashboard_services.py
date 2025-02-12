@@ -80,9 +80,9 @@ def get_recent_expense_data(db: Session, user):
                 else expense.expense_amount 
             ),
             "date": (
-                expense.recent_expense_date.strftime("%d-%m-%Y") 
+                expense.recent_expense_date.strftime("%d-%m-%Y %H:%M:%S") 
                 if expense.recent_expense_date 
-                else (expense.expense_created_date.strftime("%d-%m-%Y") if expense.expense_created_date else "-") 
+                else (expense.expense_created_date.strftime("%d-%m-%Y %H:%M:%S") if expense.expense_created_date else "-") 
             )
         }
         for expense in expenses
