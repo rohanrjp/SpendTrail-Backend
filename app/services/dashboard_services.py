@@ -67,16 +67,31 @@ def get_aggregate_data(db:Session,user):
    
    return financialData
 
-def get_recent_expense_data(db:Session,user):
-    
-    expenses=get_expenses(db,user)
-    
-    recent_expenses=[
-        { "category": expense.expense_category , "amount": expense.recent_expense_amount, "date": expense.recent_expense_date.strftime("%d-%m-%Y") if expense.recent_expense_date else "-"}
-        for expense in expenses if expense.recent_expense_amount!=0
+
+def get_recent_expense_data(db: Session, user):
+    expenses = get_expenses(db, user)
+
+    recent_expenses = [
+        {
+            "category": expense.expense_category,
+            "amount": (
+                expense.recent_expense_amount 
+                if expense.recent_expense_amount is not None and expense.recent_expense_amount != 0 
+                else expense.expense_amount 
+            ),
+            "date": (
+                expense.recent_expense_date.strftime("%d-%m-%Y") 
+                if expense.recent_expense_date 
+                else (expense.expense_created_date.strftime("%d-%m-%Y") if expense.expense_created_date else "-") 
+            )
+        }
+        for expense in expenses
     ]
+
     
-    return recent_expenses    
+    recent_expenses.sort(key=lambda x: x["date"], reverse=True)
+
+    return recent_expenses  
     
 def update_income_goal(db:Session,user,new_income_goal:float):   
     current_user=db.query(User).filter(User.id==user.id).first()
