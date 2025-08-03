@@ -5,6 +5,7 @@ from app.core.auth_dependacies import user_dependancy
 from app.models.auth_models import User
 from app.schemas.auth_schemas import message, user_sign_up,UserProfileResponse,Token
 from app.services.auth_services import check_user_exists, create_access_token,create_user, verify_password
+from app.services.subscription_services import create_default_budget, process_subscriptions
 from datetime import timedelta
 
 auth_router=APIRouter(prefix="/auth",tags=["Auth"])
@@ -26,6 +27,13 @@ async def log_in(db:db_dependancy,username: str = Form(...), password: str = For
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,message="User not found")
     if not verify_password(password,existing_user.hashed_password):
         raise  HTTPException(status_code=status.HTTP_401_UNAUTHORIZED,message="Password incorrect")
+    
+    try:
+        create_default_budget(db, existing_user)
+        process_subscriptions(db, existing_user)
+    except Exception as e:
+        print("Subscription processing failed")
+
     access_token=create_access_token(existing_user.id,existing_user.email,expiry=timedelta(minutes=20)) 
     return {"access_token":access_token,"token_type":"bearer"}
         

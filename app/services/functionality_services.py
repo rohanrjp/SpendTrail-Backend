@@ -13,9 +13,12 @@ def get_expenses(db:Session,user):
     current_month=get_ist_datetime().month
     current_year=get_ist_datetime().year
     
-    return db.query(Expenses).filter(Expenses.owner==user.id,extract('month',Expenses.expense_created_date)==current_month,extract('year',Expenses.expense_created_date)==current_year).all()
+    return db.query(Expenses).filter(
+        Expenses.owner==user.id,extract('month',Expenses.expense_created_date)==current_month,
+        extract('year',Expenses.expense_created_date)==current_year,
+        ).all()  
 
-def create_new_expense(user, db: Session, input_expense: expense):
+def create_new_expense(user, db: Session, input_expense: expense, subscription_id:int = None, expense_created_date:datetime = None):
     current_month = get_ist_datetime().month
     current_year = get_ist_datetime().year
 
@@ -32,27 +35,30 @@ def create_new_expense(user, db: Session, input_expense: expense):
             detail=f"No corresponding budget exists for category '{input_expense.expense_category}' in the current month. Create a budget for this category to record an expense"
         )
 
-    existing_expense = db.query(Expenses).filter(
-        Expenses.expense_category == input_expense.expense_category,
-        Expenses.owner == user.id,
-        extract('month', Expenses.expense_created_date) == current_month,
-        extract('year', Expenses.expense_created_date) == current_year
-    ).first()
+    if subscription_id is None: 
+        existing_expense = db.query(Expenses).filter(
+            Expenses.expense_category == input_expense.expense_category,
+            Expenses.owner == user.id,
+            extract('month', Expenses.expense_created_date) == current_month,
+            extract('year', Expenses.expense_created_date) == current_year
+        ).first()
 
-    if existing_expense:
-        raise HTTPException(
-            status_code=status.HTTP_409_CONFLICT,
-            detail=f"An expense already exists for category '{input_expense.expense_category}' this month."
-        )
+        if existing_expense:
+            raise HTTPException(
+                status_code=status.HTTP_409_CONFLICT,
+                detail=f"An expense already exists for category '{input_expense.expense_category}' this month."
+            )
 
     try:
-        expense_created_date = get_ist_datetime()
+        if not expense_created_date:
+            expense_created_date = get_ist_datetime()
         new_expense = Expenses(
             expense_amount=input_expense.expense_amount,
             expense_category=input_expense.expense_category,
             expense_emoji=input_expense.expense_emoji,
             expense_created_date=expense_created_date,
-            owner=user.id
+            owner=user.id,
+            subscription_id=input_expense.subscription_id
         )
         db.add(new_expense)
         db.commit()

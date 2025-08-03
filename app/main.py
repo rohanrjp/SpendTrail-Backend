@@ -10,6 +10,7 @@ from app.core.dependancies import db_dependancy
 from app.core.utils import get_ist_datetime
 from app.routes.dashboard import dashboard_router
 from app.routes.analytics import analytics_router
+from app.routes.subscriptions import subscription_router
 
 version="v1"
 
@@ -21,6 +22,7 @@ app.include_router(functionality_router)
 app.include_router(ai_router)
 app.include_router(dashboard_router)
 app.include_router(analytics_router)
+app.include_router(subscription_router)
 
 origins=[
     "*"
@@ -55,7 +57,6 @@ def ping(db:db_dependancy):
 if __name__=="__main__":
     
     init_db()
-    
     if Config.environment=="development":
         print("Runnning in development environment")
     else:

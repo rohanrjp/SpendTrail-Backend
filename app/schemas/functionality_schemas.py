@@ -1,5 +1,5 @@
 from pydantic import BaseModel,Field
-from typing import Literal
+from typing import Literal, Union
 from datetime import datetime
 from app.core.utils import get_ist_datetime
 
@@ -7,6 +7,7 @@ class expense(BaseModel):
    expense_amount:float
    expense_category:str
    expense_emoji:str 
+   subscription_id: Union[int, None] = None
    
 class updated_expense(BaseModel):
    amount_to_add:float   

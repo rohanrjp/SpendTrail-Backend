@@ -7,6 +7,7 @@ class Expenses(Base):
     __tablename__="expenses"
     
     id = Column(Integer, primary_key=True, index=True)
+    subscription_id = Column(Integer, ForeignKey("subscriptions.id"), nullable=True)
     expense_amount = Column(Float, nullable=False)
     recent_expense_amount = Column(Float, default=0, nullable=False)  
     expense_category = Column(String, nullable=False)
