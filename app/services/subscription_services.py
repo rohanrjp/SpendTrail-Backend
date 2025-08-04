@@ -73,7 +73,8 @@ def update_subscription(db: Session, user, input_subscription:updated_subscripti
             detail="Subscription not found or not owned by the user"  
         )
     if  not subscription.is_active and input_subscription.is_active:
-        subscription.start_date = ensure_timezone_aware(datetime.now())
+        #subscription.start_date = ensure_timezone_aware(datetime.now())
+        subscription.updated_isactive_date = ensure_timezone_aware(datetime.now())
         subscription.current_count = 0
         flag = 1
         #process_subscriptions(db, user)
@@ -145,14 +146,20 @@ def should_deactivate_subscription(subscription: Subscriptions, current_time: da
   
 def should_generate_expense(subscription: Subscriptions, current_time: datetime, db: Session) -> bool:      
     # Calculate how many payments should have been made by now  
-    expected_payments = calculate_expected_payments(subscription, current_time)  
-      
+    expected_payments = calculate_expected_payments(subscription, current_time)
+
+    if subscription.updated_isactive_date:  
     # Check how many payments have actually been made  
-    actual_payments = db.query(Expenses).filter(  
-        Expenses.subscription_id == subscription.id,
-        #for cases when status changed deactivated to activated
-        extract('day', Expenses.expense_created_date) >= extract('day', subscription.start_date) 
-    ).count()  
+        actual_payments = db.query(Expenses).filter(  
+            Expenses.subscription_id == subscription.id,
+            #for cases when status changed deactivated to activated
+            extract('day', Expenses.expense_created_date) >= extract('day', subscription.updated_isactive_date) 
+        ).count()
+
+    else:
+            actual_payments = db.query(Expenses).filter(  
+                Expenses.subscription_id == subscription.id,
+            ).count()         
        
     return actual_payments < expected_payments 
   
@@ -174,11 +181,17 @@ def generate_subscription_expense(user,subscription: Subscriptions, db: Session)
     # Calculate how many payments should exist  
     expected_payments = calculate_expected_payments(subscription, current_time)  
       
-    # Get existing payments  
-    existing_payments = db.query(Expenses).filter(  
-        Expenses.subscription_id == subscription.id,
-        extract('day', Expenses.expense_created_date) >= extract('day', subscription.start_date)  
-    ).count()  
+    if subscription.updated_isactive_date:
+        # Get existing payments  
+        existing_payments = db.query(Expenses).filter(  
+            Expenses.subscription_id == subscription.id,
+            extract('day', Expenses.expense_created_date) >= extract('day', subscription.updated_isactive_date)  
+        ).count()
+
+    else:
+        existing_payments = db.query(Expenses).filter(
+            Expenses.subscription_id == subscription.id  
+        ).count()  
       
     # Generate missing payments  
     payments_to_generate = expected_payments - existing_payments  
@@ -208,7 +221,10 @@ def generate_subscription_expense(user,subscription: Subscriptions, db: Session)
 
 def calculate_expected_payments(subscription: Subscriptions, current_time: datetime) -> int:
 
-    subscription_start = ensure_timezone_aware(subscription.start_date)  
+    if subscription.updated_isactive_date:
+        subscription_start = ensure_timezone_aware(subscription.updated_isactive_date)
+    else:
+        subscription_start = ensure_timezone_aware(subscription.start_date)  
 
     if current_time < subscription_start:
         return 0

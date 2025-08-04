@@ -23,5 +23,6 @@ class Subscriptions(Base):
     current_count = Column(Integer, default=0, nullable=False)  # Track executions  
     is_active = Column(Boolean, default=True, nullable=False)  
     created_date = Column(DateTime, default=func.now(), nullable=False)  
-    updated_date = Column(DateTime, default=func.now(), onupdate=func.now(), nullable=False)  
+    updated_date = Column(DateTime, default=func.now(), onupdate=func.now(), nullable=False)
+    updated_isactive_date = Column(DateTime, nullable=True)
     owner = Column(Integer, ForeignKey("user_details.id"), nullable=False)
