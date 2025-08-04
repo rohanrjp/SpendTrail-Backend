@@ -1,6 +1,7 @@
 from app.models.expenses import Expenses
 from app.models.incomes import Incomes
 from app.models.budgets import Budgets
+from app.models.subscriptions import Subscriptions
 from app.schemas.functionality_schemas import expense,updated_expense,income,budget,updated_budget
 from sqlalchemy.orm import Session
 from app.core.utils import get_ist_datetime
@@ -48,7 +49,7 @@ def create_new_expense(user, db: Session, input_expense: expense, subscription_i
                 status_code=status.HTTP_409_CONFLICT,
                 detail=f"An expense already exists for category '{input_expense.expense_category}' this month."
             )
-
+    new_expense = None
     try:
         if not expense_created_date:
             expense_created_date = get_ist_datetime()
@@ -80,22 +81,43 @@ def update_expense(user,db:Session,category:str,amount_to_add:updated_expense):
     expense = db.query(Expenses).filter(
         Expenses.expense_category == category,
         Expenses.owner == user.id,
+        Expenses.subscription_id.is_(None),
         extract('month', Expenses.expense_created_date) == current_month,
         extract('year', Expenses.expense_created_date) == current_year
     ).first()
 
-    if not expense:
-        raise HTTPException(status_code=404, detail="Expense category not found or not owned by the user")
+    if expense:
+        amount_to_add = float(amount_to_add)
+        expense.expense_amount += amount_to_add
+        expense.recent_expense_amount = amount_to_add
+        expense.recent_expense_date = get_ist_datetime()
 
-    amount_to_add = float(amount_to_add)
+        db.commit()
+        db.refresh(expense)  
+    
+    else:
+        check_subscription_exists = db.query(Subscriptions).filter(
+            Subscriptions.owner == user.id,
+            Subscriptions.category == category
+        ).first()
 
-    expense.expense_amount += amount_to_add
+        if check_subscription_exists:
+            expense_created_date = get_ist_datetime()
+            create_expense = Expenses(
+                expense_amount=float(amount_to_add),
+                expense_category=category,
+                expense_emoji="💳",
+                expense_created_date=expense_created_date,
+                owner=user.id
+        )
+        
+            db.add(create_expense)
+            db.commit()
+            db.refresh(create_expense)
 
-    expense.recent_expense_amount = amount_to_add
-    expense.recent_expense_date = get_ist_datetime()
+        else:
+            raise HTTPException(status_code=404, detail="Expense category not found or not owned by the user")
 
-    db.commit()
-    db.refresh(expense)  
     
 def get_incomes(db:Session,user):
     current_month=get_ist_datetime().month

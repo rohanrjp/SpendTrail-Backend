@@ -72,12 +72,16 @@ def update_subscription(db: Session, user, input_subscription:updated_subscripti
             status_code=status.HTTP_404_NOT_FOUND,  
             detail="Subscription not found or not owned by the user"  
         )
+    if  not subscription.is_active and input_subscription.is_active:
+        subscription.start_date = ensure_timezone_aware(datetime.now())
+        subscription.current_count = 0
+        flag = 1
+        #process_subscriptions(db, user)
 
     update_data = input_subscription.model_dump(exclude_unset=True,exclude={"id"}) 
-    print(update_data)
     for x,y in update_data.items():
         setattr(subscription,x,y)
-    print(subscription)
+    subscription.updated_date = ensure_timezone_aware(datetime.now()) 
     db.commit()
     db.refresh(subscription)
     
@@ -145,7 +149,9 @@ def should_generate_expense(subscription: Subscriptions, current_time: datetime,
       
     # Check how many payments have actually been made  
     actual_payments = db.query(Expenses).filter(  
-        Expenses.subscription_id == subscription.id  
+        Expenses.subscription_id == subscription.id,
+        #for cases when status changed deactivated to activated
+        extract('day', Expenses.expense_created_date) >= extract('day', subscription.start_date) 
     ).count()  
        
     return actual_payments < expected_payments 
@@ -170,7 +176,8 @@ def generate_subscription_expense(user,subscription: Subscriptions, db: Session)
       
     # Get existing payments  
     existing_payments = db.query(Expenses).filter(  
-        Expenses.subscription_id == subscription.id  
+        Expenses.subscription_id == subscription.id,
+        extract('day', Expenses.expense_created_date) >= extract('day', subscription.start_date)  
     ).count()  
       
     # Generate missing payments  
