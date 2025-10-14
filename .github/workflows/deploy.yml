@@ -33,7 +33,6 @@ jobs:
         run: gcloud auth list
 
       - name: 📝 Generate app.yaml dynamically (ROBUST FIX)
-        # This step creates and executes a temporary script to ensure clean YAML generation.
         run: |
           # 1. Create a temporary script file to handle the file generation.
           cat > generate_app_yaml.sh <<'SCRIPT_EOF'
@@ -72,4 +71,5 @@ jobs:
       - name: Install dependencies
         run: pip install -r requirements.txt
 
-      - name: Deploy to
+      - name: Deploy to App Engine
+        run: gcloud app deploy app.yaml --quiet --verbosity=info
