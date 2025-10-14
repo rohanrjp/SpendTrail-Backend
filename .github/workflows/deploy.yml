@@ -32,7 +32,8 @@ jobs:
       - name: Verify gcloud auth
         run: gcloud auth list
 
-      - name: Generate app.yaml dynamically
+
+      - name: 📝 Generate app.yaml dynamically (Deployment Configuration)
         run: |
           cat > app.yaml <<'EOF'
           service: ${{ github.event.inputs.service_name }}
@@ -42,21 +43,25 @@ jobs:
           automatic_scaling:
             max_instances: 1
             min_instances: 0
-
-          env_variables:
-            SECRET_KEY: "${{ secrets.SECRET_KEY }}"
-            ALGORITHM: "${{ secrets.ALGORITHM }}"
-            ACCESS_TOKEN_EXPIRE_MINUTES: "${{ secrets.ACCESS_TOKEN_EXPIRE_MINUTES }}"
-            DATABASE_URL: "${{ secrets.DATABASE_URL }}"
-            GEMINI_API_KEY: "${{ secrets.GEMINI_API_KEY }}"
-            ENVIRONMENT: "${{ secrets.ENVIRONMENT }}"
           EOF
 
           echo "Generated app.yaml:"
           cat app.yaml
+      
+      - name: 🔑 Generate env_vars.yaml (Secret Payload)
+        run: |
+          cat > env_vars.yaml <<'EOF'
+          SECRET_KEY: ${{ secrets.SECRET_KEY }}
+          ALGORITHM: ${{ secrets.ALGORITHM }}
+          ACCESS_TOKEN_EXPIRE_MINUTES: ${{ secrets.ACCESS_TOKEN_EXPIRE_MINUTES }}
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          ENVIRONMENT: ${{ secrets.ENVIRONMENT }}
+          EOF
+
 
       - name: Install dependencies
         run: pip install -r requirements.txt
 
       - name: Deploy to App Engine
-        run: gcloud app deploy app.yaml --quiet --verbosity=info
+        run: gcloud app deploy app.yaml --quiet --verbosity=info --env-vars-file=env_vars.yaml
