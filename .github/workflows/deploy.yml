@@ -19,6 +19,7 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Authenticate to GCP
+        # This step uses the raw JSON string directly, which is correct
         uses: google-github-actions/auth@v1
         with:
           credentials_json: ${{ secrets.GCP_SA_KEY }}
@@ -32,8 +33,8 @@ jobs:
       - name: Verify gcloud auth
         run: gcloud auth list
 
-      - name: 📝 Generate app.yaml dynamically (FINAL ROBUST FIX)
-        # 1. Define GitHub secrets as environment variables for this step using 'env:'
+      - name: 📝 Generate app.yaml dynamically (FINAL FIX: Literal Block Scalar)
+        # 1. Define GitHub secrets as environment variables for this step
         env:
           SERVICE_NAME: ${{ github.event.inputs.service_name }}
           APP_SECRET_KEY: ${{ secrets.SECRET_KEY }}
@@ -43,14 +44,12 @@ jobs:
           APP_GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
           APP_ENVIRONMENT: ${{ secrets.ENVIRONMENT }}
           
-        # 2. Use a simple shell script to generate app.yaml, relying on the 'env' variables
+        # 2. Use shell substitution to generate app.yaml
         run: |
-          # Use an unquoted EOF (<<EOF) to allow shell variable expansion.
-          # The shell substitutes all $VARIABLES with their secret values.
           cat > app.yaml <<EOF
           service: $SERVICE_NAME
           runtime: python310
-          # \$PORT must be escaped so App Engine gets the literal string $PORT
+          # $PORT must be escaped so App Engine gets the literal string $PORT
           entrypoint: uvicorn app.main:app --host=0.0.0.0 --port=\$PORT
 
           automatic_scaling:
@@ -58,11 +57,14 @@ jobs:
             min_instances: 0
 
           env_variables:
-            # Shell variables are substituted here and wrapped in quotes for valid YAML
-            SECRET_KEY: "$APP_SECRET_KEY"
+            # Applying Literal Block Scalar (|) to values that might contain 
+            # quotes or colons (like your DATABASE_URL)
+            SECRET_KEY: |
+              $APP_SECRET_KEY
             ALGORITHM: "$APP_ALGORITHM"
             ACCESS_TOKEN_EXPIRE_MINUTES: "$APP_ACCESS_TOKEN_EXPIRE_MINUTES"
-            DATABASE_URL: "$APP_DATABASE_URL"
+            DATABASE_URL: |
+              $APP_DATABASE_URL
             GEMINI_API_KEY: "$APP_GEMINI_API_KEY"
             ENVIRONMENT: "$APP_ENVIRONMENT"
           EOF
