@@ -3,6 +3,12 @@ name: Deploy FastAPI to App Engine (Free Tier)
 on:
   push:
     branches: [ main ]
+  workflow_dispatch:
+    inputs:
+      service_name:
+        description: 'Name of the App Engine service'
+        required: true
+        default: 'fastapi-api'
 
 jobs:
   deploy:
