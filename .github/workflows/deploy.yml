@@ -34,10 +34,10 @@ jobs:
 
       - name: Generate app.yaml dynamically
         run: |
-          cat > app.yaml <<EOF
+          cat > app.yaml <<'EOF'
           service: ${{ github.event.inputs.service_name }}
           runtime: python310
-          entrypoint: uvicorn app.main:app --host=0.0.0.0 --port=\$PORT
+          entrypoint: uvicorn app.main:app --host=0.0.0.0 --port=$PORT
 
           automatic_scaling:
             max_instances: 1
@@ -51,6 +51,9 @@ jobs:
             GEMINI_API_KEY: "${{ secrets.GEMINI_API_KEY }}"
             ENVIRONMENT: "${{ secrets.ENVIRONMENT }}"
           EOF
+
+          echo "Generated app.yaml:"
+          cat app.yaml
 
       - name: Install dependencies
         run: pip install -r requirements.txt
