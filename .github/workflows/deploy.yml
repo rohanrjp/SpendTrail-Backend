@@ -18,15 +18,24 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Set up Google Cloud SDK
+      - name: Authenticate to GCP
+        uses: google-github-actions/auth@v1
+        with:
+          credentials_json: ${{ secrets.GCP_SA_KEY }}
+
+      - name: Set up gcloud CLI
         uses: google-github-actions/setup-gcloud@v2
         with:
           project_id: ${{ secrets.GCP_PROJECT }}
-          service_account_key: ${{ secrets.GCP_SA_KEY }}
+          version: 'latest'
+
+      - name: Verify gcloud auth
+        run: gcloud auth list
 
       - name: Generate app.yaml dynamically
         run: |
           cat > app.yaml <<EOF
+          service: ${{ github.event.inputs.service_name }}
           runtime: python310
           entrypoint: uvicorn app.main:app --host=0.0.0.0 --port=\$PORT
 
