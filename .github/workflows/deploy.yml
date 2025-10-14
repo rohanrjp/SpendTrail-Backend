@@ -32,20 +32,27 @@ jobs:
       - name: Verify gcloud auth
         run: gcloud auth list
 
-      - name: 📝 Generate app.yaml dynamically (FIXED)
+      - name: 📝 Generate app.yaml dynamically (ROBUST FIX)
+        # This step creates and executes a temporary script to ensure clean YAML generation.
         run: |
+          # 1. Create a temporary script file to handle the file generation.
+          cat > generate_app_yaml.sh <<'SCRIPT_EOF'
+          #!/bin/bash
+          
+          # The inner heredoc (<<'EOF') is now inside a separate script, 
+          # which prevents double-parsing issues.
           cat > app.yaml <<'EOF'
           service: ${{ github.event.inputs.service_name }}
           runtime: python310
-          # ESCAPE: \$PORT ensures the literal string $PORT is passed to App Engine
-          entrypoint: uvicorn app.main:app --host=0.0.0.0 --port=\$PORT 
+          # We still need to escape $PORT so App Engine gets the literal string $PORT
+          entrypoint: uvicorn app.main:app --host=0.0.0.0 --port=\$PORT
 
           automatic_scaling:
             max_instances: 1
             min_instances: 0
 
           env_variables:
-            # All values MUST be double-quoted to be valid YAML strings
+            # All values MUST be double-quoted
             SECRET_KEY: "${{ secrets.SECRET_KEY }}"
             ALGORITHM: "${{ secrets.ALGORITHM }}"
             ACCESS_TOKEN_EXPIRE_MINUTES: "${{ secrets.ACCESS_TOKEN_EXPIRE_MINUTES }}"
@@ -53,12 +60,16 @@ jobs:
             GEMINI_API_KEY: "${{ secrets.GEMINI_API_KEY }}"
             ENVIRONMENT: "${{ secrets.ENVIRONMENT }}"
           EOF
-
+          
           echo "Generated app.yaml:"
           cat app.yaml
+          
+          SCRIPT_EOF
+          
+          # 2. Execute the script file to generate app.yaml
+          bash generate_app_yaml.sh
 
       - name: Install dependencies
         run: pip install -r requirements.txt
 
-      - name: Deploy to App Engine
-        run: gcloud app deploy app.yaml --quiet --verbosity=info
+      - name: Deploy to
