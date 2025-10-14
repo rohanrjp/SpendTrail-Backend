@@ -32,18 +32,25 @@ jobs:
       - name: Verify gcloud auth
         run: gcloud auth list
 
-      - name: 📝 Generate app.yaml dynamically (ROBUST FIX)
-        run: |
-          # 1. Create a temporary script file to handle the file generation.
-          cat > generate_app_yaml.sh <<'SCRIPT_EOF'
-          #!/bin/bash
+      - name: 📝 Generate app.yaml dynamically (FINAL ROBUST FIX)
+        # 1. Define GitHub secrets as environment variables for this step using 'env:'
+        env:
+          SERVICE_NAME: ${{ github.event.inputs.service_name }}
+          APP_SECRET_KEY: ${{ secrets.SECRET_KEY }}
+          APP_ALGORITHM: ${{ secrets.ALGORITHM }}
+          APP_ACCESS_TOKEN_EXPIRE_MINUTES: ${{ secrets.ACCESS_TOKEN_EXPIRE_MINUTES }}
+          APP_DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          APP_GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          APP_ENVIRONMENT: ${{ secrets.ENVIRONMENT }}
           
-          # The inner heredoc (<<'EOF') is now inside a separate script, 
-          # which prevents double-parsing issues.
-          cat > app.yaml <<'EOF'
-          service: ${{ github.event.inputs.service_name }}
+        # 2. Use a simple shell script to generate app.yaml, relying on the 'env' variables
+        run: |
+          # Use an unquoted EOF (<<EOF) to allow shell variable expansion.
+          # The shell substitutes all $VARIABLES with their secret values.
+          cat > app.yaml <<EOF
+          service: $SERVICE_NAME
           runtime: python310
-          # We still need to escape $PORT so App Engine gets the literal string $PORT
+          # \$PORT must be escaped so App Engine gets the literal string $PORT
           entrypoint: uvicorn app.main:app --host=0.0.0.0 --port=\$PORT
 
           automatic_scaling:
@@ -51,22 +58,17 @@ jobs:
             min_instances: 0
 
           env_variables:
-            # All values MUST be double-quoted
-            SECRET_KEY: "${{ secrets.SECRET_KEY }}"
-            ALGORITHM: "${{ secrets.ALGORITHM }}"
-            ACCESS_TOKEN_EXPIRE_MINUTES: "${{ secrets.ACCESS_TOKEN_EXPIRE_MINUTES }}"
-            DATABASE_URL: "${{ secrets.DATABASE_URL }}"
-            GEMINI_API_KEY: "${{ secrets.GEMINI_API_KEY }}"
-            ENVIRONMENT: "${{ secrets.ENVIRONMENT }}"
+            # Shell variables are substituted here and wrapped in quotes for valid YAML
+            SECRET_KEY: "$APP_SECRET_KEY"
+            ALGORITHM: "$APP_ALGORITHM"
+            ACCESS_TOKEN_EXPIRE_MINUTES: "$APP_ACCESS_TOKEN_EXPIRE_MINUTES"
+            DATABASE_URL: "$APP_DATABASE_URL"
+            GEMINI_API_KEY: "$APP_GEMINI_API_KEY"
+            ENVIRONMENT: "$APP_ENVIRONMENT"
           EOF
-          
+
           echo "Generated app.yaml:"
           cat app.yaml
-          
-          SCRIPT_EOF
-          
-          # 2. Execute the script file to generate app.yaml
-          bash generate_app_yaml.sh
 
       - name: Install dependencies
         run: pip install -r requirements.txt
