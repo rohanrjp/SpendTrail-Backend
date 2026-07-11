@@ -10,6 +10,6 @@ async def ai_feature(db:db_dependancy,user:user_dependancy):
     expenses=format_expense_data(db,user)
     budgets=format_budget_data(db,user)
     incomes=format_income_data(db,user)
-    prompt=generate_prompt(expenses=expenses,budgets=budgets,incomes=incomes)
+    prompt=generate_prompt(expenses=expenses,budgets=budgets,incomes=incomes,currency=user.currency or "INR")
     response = get_ai_response(prompt)
     return response

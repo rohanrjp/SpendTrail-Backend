@@ -1,78 +1,45 @@
-name: Deploy FastAPI to App Engine (Free Tier)
+name: Deploy to Google Cloud Run
 
 on:
   push:
-    branches: [ main ]
-  workflow_dispatch:
-    inputs:
-      service_name:
-        description: 'Name of the App Engine service'
-        required: true
-        default: 'fastapi-api'
+    branches:
+      - main 
+  workflow_dispatch:  
+
+env:
+  DOCKER_USERNAME: ${{ secrets.DOCKER_HUB_USERNAME }}
+  DOCKER_PASSWORD: ${{ secrets.DOCKER_HUB_ACCESS_TOKEN }}
+  DOCKER_IMAGE: rjp1007/mbot
+  GCP_PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
+  GCP_REGION: asia-south1
+  SERVICE_NAME: mbot
 
 jobs:
-  deploy:
+  build-and-deploy:
     runs-on: ubuntu-latest
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Authenticate to GCP
-        uses: google-github-actions/auth@v1
+      - name: Log in to Docker Hub
+        run: echo "${DOCKER_PASSWORD}" | docker login -u "${DOCKER_USERNAME}" --password-stdin
+
+      - name: Build Docker image
+        run: docker build --no-cache -t $DOCKER_IMAGE:latest .
+
+      - name: Push image to Docker Hub
+        run: docker push $DOCKER_IMAGE:latest
+
+      - name: Authenticate with Google Cloud
+        uses: google-github-actions/auth@v2
         with:
           credentials_json: ${{ secrets.GCP_SA_KEY }}
 
-      - name: Set up gcloud CLI
-        uses: google-github-actions/setup-gcloud@v2
-        with:
-          project_id: ${{ secrets.GCP_PROJECT }}
-          version: 'latest'
-
-      - name: Verify gcloud auth
-        run: gcloud auth list
-
-      - name: 📝 Generate app.yaml dynamically (FINAL FIX)
-        # 1. Define GitHub secrets as environment variables for this step
-        env:
-          SERVICE_NAME: ${{ github.event.inputs.service_name }}
-          APP_SECRET_KEY: ${{ secrets.SECRET_KEY }}
-          APP_ALGORITHM: ${{ secrets.ALGORITHM }}
-          APP_ACCESS_TOKEN_EXPIRE_MINUTES: ${{ secrets.ACCESS_TOKEN_EXPIRE_MINUTES }}
-          APP_DATABASE_URL: ${{ secrets.DATABASE_URL }}
-          APP_GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
-          APP_ENVIRONMENT: ${{ secrets.ENVIRONMENT }}
-          
-        # 2. Use shell substitution to generate app.yaml
+      - name: Deploy to Google Cloud Run
         run: |
-          # The EOF delimiter is unquoted to allow shell variable expansion.
-          cat > app.yaml <<EOF
-          service: $SERVICE_NAME
-          runtime: python310
-          # $PORT must be escaped so App Engine gets the literal string $PORT
-          entrypoint: uvicorn app.main:app --host=0.0.0.0 --port=\$PORT
-
-          automatic_scaling:
-            max_instances: 1
-            min_instances: 0
-
-          env_variables:
-            # Literal Block Scalar (|) handles complex strings (like JSON/DB URLs) safely.
-            SECRET_KEY: |
-              $APP_SECRET_KEY
-            ALGORITHM: "$APP_ALGORITHM"
-            ACCESS_TOKEN_EXPIRE_MINUTES: "$APP_ACCESS_TOKEN_EXPIRE_MINUTES"
-            DATABASE_URL: |
-              $APP_DATABASE_URL
-            GEMINI_API_KEY: "$APP_GEMINI_API_KEY"
-            ENVIRONMENT: "$APP_ENVIRONMENT"
-          EOF
-
-          echo "Generated app.yaml:"
-          cat app.yaml
-
-      - name: Install dependencies
-        run: pip install -r requirements.txt
-
-      - name: Deploy to App Engine
-        run: gcloud app deploy app.yaml --quiet --verbosity=info
+          gcloud run deploy $SERVICE_NAME \
+            --image docker.io/$DOCKER_IMAGE:latest \
+            --region $GCP_REGION \
+            --platform managed \
+            --allow-unauthenticated
