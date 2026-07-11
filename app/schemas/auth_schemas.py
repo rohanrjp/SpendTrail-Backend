@@ -1,4 +1,6 @@
+from __future__ import annotations
 from datetime import datetime
+from typing import Optional
 from pydantic import BaseModel
 
 class user_sign_up(BaseModel):
@@ -6,6 +8,7 @@ class user_sign_up(BaseModel):
     email:str
     password:str
     avatar:str
+    currency:str="INR"
 
 class message(BaseModel):
     message:str
@@ -27,7 +30,8 @@ class UserProfileResponse(BaseModel):
     id: int
     name: str
     email: str
-    avatar: str = None 
+    avatar: Optional[str] = None
     join_date: datetime    
     income_goal:float
     savings_goal:float
+    currency:str="INR"

@@ -14,3 +14,4 @@ class User(Base):
     join_date = Column(DateTime, nullable=False) 
     income_goal=Column(Float,nullable=True)
     savings_goal=Column(Float,nullable=True)
+    currency=Column(String,nullable=True,default="INR")
